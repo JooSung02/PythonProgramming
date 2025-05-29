@@ -1,38 +1,41 @@
-# Multimodal Emotion Recognition WebApp
+# 실시간 얼굴 감정 인식 웹 애플리케이션
 
-We analye facial, vocal and textual emotions, using mostly deep learning based approaches. We deployed a web app using Flask :
+이 프로젝트는 실시간으로 얼굴 표정을 분석하여 감정을 인식하는 웹 애플리케이션입니다. 딥러닝 기반의 접근 방식을 사용하여 구현되었습니다.
 
-![image](webapp.png)
+## 사용 방법
 
-## How to use it ?
+웹 애플리케이션을 실행하려면:
+1. 프로젝트를 로컬에 클론합니다
+2. WebApp 폴더로 이동합니다
+3. `pip install -r requirements.txt` 명령어로 필요한 패키지를 설치합니다
+4. `python main.py` 명령어로 애플리케이션을 실행합니다
+5. http://127.0.0.1:5000/ 주소로 접속합니다 (또는 터미널에 표시된 링크를 사용)
 
-To use the web app :
-- Clone the project locally
-- Go in the WebApp folder
-- Run `$ pip install -r requirements.txt``
-- Launch the app by running `python main.py`
-- Go to http://127.0.0.1:5000/ (or follow the link given in your terminal
+## 작동 방식
 
-## How does it work ?
+이 애플리케이션은 실시간으로 웹캠을 통해 얼굴을 감지하고, 감정을 분석합니다. 다음과 같은 감정들을 인식할 수 있습니다:
+- 기쁨
+- 슬픔
+- 분노
+- 놀람
+- 두려움
+- 역겨움
+- 무표정
 
-As stated in the project home page, we have defined and trained deep learning models to analyze emotions and psychological traits from video, audio and text inputs.
-The user should be able to click on any of the sections, take the interview, and get a feedback on his performance compared to other people who already took the test.
+## 프로젝트 구조
 
-## Getting the feedback
+프로젝트의 구조는 다음과 같습니다:
 
-For both the text and the audio, a button will directly allow you to get feedback. A dashboard displays your performance compared to other candidates.
-
-For the video, due to restrictions of Flask, we are recording the video input for 45 seconds. After this time, the image will freeze. Simply switch the URL to `/video_dash` instead of `/video1` in the URL bar to go to the dashboard.
-
-## Organization
-
-The organization of the project is the following :
-
-- Models : All the pre-trained models used by the WebApp
-- library : The Python scripts that run the emotion detection algorithms
-- static :
-  - CSS : The CSS style sheet and fixed images to display
-  - JS : The JavaScript of the app (D3.js) and the databases that store the information
-- templates : All the HTML pages of the project
-- tmp : Temporary files (i.e. an image from video interview, an audio file or a PDF)
-- main.py : The Flask page that calls the functions and redirects to HTML files
+- `Models/`: 사전 학습된 모델 파일들
+  - `video.h5`: 비디오 감정 인식 모델
+  - `face_landmarks.dat`: 얼굴 랜드마크 데이터
+- `library/`: 감정 인식 알고리즘을 실행하는 Python 스크립트
+  - `video_emotion_recognition.py`: 비디오 감정 인식 관련 코드
+- `static/`: 정적 파일들
+  - `CSS/`: 스타일시트 파일들
+  - `js/`: JavaScript 파일들
+- `templates/`: HTML 템플릿 파일들
+  - `index.html`: 메인 페이지
+  - `video.html`: 비디오 감정 인식 페이지
+- `tmp/`: 임시 파일 저장 디렉토리
+- `main.py`: Flask 애플리케이션의 메인 파일
