@@ -4,56 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>실시간 표정 감지</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
       body {
         font-family: 'Noto Sans KR', sans-serif;
         margin: 0;
         padding: 20px;
-        background-color: #f5f5f5;
-        text-align: center;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
       }
       .container {
-        max-width: 800px;
+        max-width: 1200px;
         margin: 40px auto;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 40px;
       }
       h1 {
-        color: #333;
+        color: #2c3e50;
+        text-align: center;
         margin-bottom: 30px;
       }
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: start;
+      }
       .video-container {
-        margin: 20px auto;
-        max-width: 640px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
       }
       .video-container img {
         width: 100%;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
+      .emotion-results {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      }
+      .emotion-bar {
+        margin: 15px 0;
+      }
+      .emotion-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+      .emotion-name {
+        font-weight: 500;
+        color: #2c3e50;
+      }
+      .emotion-value {
+        color: #7f8c8d;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 10px;
+        background: #e9ecef;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .progress {
+        height: 100%;
+        background: linear-gradient(45deg, #45AF7F, #3d9c6f);
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+      .controls {
+        margin-top: 30px;
+        text-align: center;
       }
       .btn {
         display: inline-block;
-        padding: 15px 30px;
-        background-color: #45AF7F;
+        padding: 12px 30px;
+        background: linear-gradient(45deg, #45AF7F, #3d9c6f);
         color: white;
         text-decoration: none;
-        border-radius: 10px;
-        font-weight: bold;
-        transition: 0.2s;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(69, 175, 127, 0.3);
+        border: none;
+        cursor: pointer;
+        margin: 0 10px;
       }
       .btn:hover {
-        background-color: #3d9c6f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(69, 175, 127, 0.4);
       }
       .btn-secondary {
-        background-color: #6c757d;
+        background: linear-gradient(45deg, #6c757d, #5a6268);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
       }
       .btn-secondary:hover {
-        background-color: #5a6268;
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
       }
-      .controls {
+      .status {
+        text-align: center;
         margin: 20px 0;
+        padding: 10px;
+        border-radius: 10px;
+        background: #e9ecef;
+        color: #2c3e50;
+      }
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+        .container {
+          margin: 20px;
+          padding: 20px;
+        }
       }
     </style>
   </head>
@@ -62,12 +130,68 @@
     <div class="container">
       <h1>실시간 표정 감지</h1>
       
-      <div class="video-container">
-        <img src="{{ url_for('video_feed') }}" alt="비디오 스트림">
+      <div class="main-content">
+        <div class="video-container">
+          <img src="{{ url_for('video_feed') }}" alt="비디오 스트림" id="video-feed">
+        </div>
+        
+        <div class="emotion-results">
+          <h2>감정 분석 결과</h2>
+          <div class="emotion-bar">
+            <div class="emotion-label">
+              <span class="emotion-name">행복</span>
+              <span class="emotion-value">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="emotion-bar">
+            <div class="emotion-label">
+              <span class="emotion-name">슬픔</span>
+              <span class="emotion-value">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="emotion-bar">
+            <div class="emotion-label">
+              <span class="emotion-name">분노</span>
+              <span class="emotion-value">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="emotion-bar">
+            <div class="emotion-label">
+              <span class="emotion-name">놀람</span>
+              <span class="emotion-value">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="emotion-bar">
+            <div class="emotion-label">
+              <span class="emotion-name">중립</span>
+              <span class="emotion-value">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status">
+        <p>웹캠이 정상적으로 작동 중입니다.</p>
       </div>
 
       <div class="controls">
         <a href="/" class="btn">홈으로</a>
+        <button class="btn btn-secondary" onclick="history.go(-1)">뒤로가기</button>
       </div>
 
       {% with messages = get_flashed_messages() %}
@@ -83,21 +207,54 @@
     </div>
 
     <script>
-      $(document).ready(function() {
-        console.log("페이지 로드 완료");
+      document.addEventListener('DOMContentLoaded', function() {
+        const videoFeed = document.getElementById('video-feed');
         
-        // 비디오 피드 로딩 상태 확인
-        $('#video-feed').on('load', function() {
+        // 감정 레이블 매핑
+        const emotionMapping = {
+          'Angry': '분노',
+          'Disgust': '혐오',
+          'Fear': '두려움',
+          'Happy': '행복',
+          'Neutral': '중립',
+          'Sad': '슬픔',
+          'Surprise': '놀람'
+        };
+
+        // 감정 분석 결과 업데이트 함수
+        function updateEmotionResults(face1) {
+          Object.entries(emotionMapping).forEach(([eng, kor], idx) => {
+            const percentage = face1 && face1[eng] ? Math.round(face1[eng] * 100) : 0;
+            const emotionBar = document.querySelectorAll('.emotion-bar .progress')[idx];
+            const emotionValue = document.querySelectorAll('.emotion-bar .emotion-value')[idx];
+            if (emotionBar && emotionValue) {
+              emotionBar.style.width = `${percentage}%`;
+              emotionValue.textContent = `${percentage}%`;
+            }
+          });
+        }
+
+        // 주기적으로 감정 결과를 받아옴
+        setInterval(function() {
+          fetch('/emotion_feed')
+            .then(res => res.json())
+            .then(data => {
+              // 여러 얼굴이 있을 경우 첫 번째 얼굴만 사용
+              const face1 = data.face_1 || null;
+              updateEmotionResults(face1);
+            })
+            .catch(err => console.error('감정 결과 갱신 오류:', err));
+        }, 1000);
+
+        videoFeed.onload = function() {
           console.log("비디오 피드 로드 성공");
-        }).on('error', function() {
+        };
+        videoFeed.onerror = function() {
           console.log("비디오 피드 로드 실패");
-        });
+          document.querySelector('.status').innerHTML = 
+            '<p style="color: #dc3545;">웹캠 연결에 실패했습니다. 웹캠이 연결되어 있는지 확인해주세요.</p>';
+        };
       });
     </script>
-
-    <br>
-    <form>
-      <input type="button" value="뒤로가기" onclick="history.go(-1)">
-    </form>
   </body>
 </html>

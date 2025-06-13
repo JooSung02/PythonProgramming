@@ -5,9 +5,29 @@ from scipy.ndimage import zoom
 import dlib
 from imutils import face_utils
 import os
+import json
 
 ### Model ###
 from tensorflow.keras.models import load_model
+
+# 감정 레이블 정의
+EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
+
+# 콜백 저장용 변수
+emotion_result_callback = None
+
+def set_emotion_result_callback(cb):
+    global emotion_result_callback
+    emotion_result_callback = cb
+
+def get_emotion_predictions(prediction):
+    """
+    예측 결과를 감정별 확률로 변환
+    """
+    emotions = {}
+    for i, emotion in enumerate(EMOTIONS):
+        emotions[emotion] = float(prediction[0][i])
+    return emotions
 
 def gen():
     """
@@ -84,88 +104,51 @@ def gen():
             # 얼굴 감지
             rects = face_detect(gray, 1)
             
-            # 감지된 얼굴에 대해 처리
+            # 감정 분석 결과 저장
+            emotion_results = {}
+            
             for (i, rect) in enumerate(rects):
                 # 얼굴 좌표 가져오기
                 (x, y, w, h) = face_utils.rect_to_bb(rect)
                 face = gray[y:y+h, x:x+w]
                 
-                # 랜드마크 감지
-                shape = predictor_landmarks(gray, rect)
-                shape = face_utils.shape_to_np(shape)
-                
-                # 얼굴 크기 조정
-                face = cv2.resize(face, (48, 48))
+                # 얼굴 이미지 크기 조정
+                face = zoom(face, (48 / face.shape[0], 48 / face.shape[1]))
                 face = face.astype(np.float32)
-                face /= 255.0
-                face = np.reshape(face, (1, 48, 48, 1))
+                face /= float(face.max())
+                face = np.reshape(face.flatten(), (1, 48, 48, 1))
                 
                 # 감정 예측
                 prediction = model.predict(face)
-                prediction_result = np.argmax(prediction)
-                
-                # 감정 레이블과 확률 계산
-                emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-                emotion = emotions[prediction_result]
-                
-                # 각 감정의 확률을 퍼센트로 계산
-                probabilities = prediction[0] * 100
-                
-                # 좌측 상단에 각 감정의 확률 표시
-                y_offset = 30
-                for i, (emotion_name, prob) in enumerate(zip(emotions, probabilities)):
-                    text = f"{emotion_name}: {prob:.1f}%"
-                    cv2.putText(frame, text, (10, y_offset + i*30), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                emotion_results[f"face_{i+1}"] = get_emotion_predictions(prediction)
                 
                 # 얼굴 주변에 사각형 그리기
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 
-                # 현재 감정 레이블 추가
-                cv2.putText(frame, emotion, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-                
-                # 랜드마크 그리기
-                for (j, k) in shape:
-                    cv2.circle(frame, (j, k), 1, (0, 0, 255), -1)
-                
-                # 눈 그리기
-                leftEye = shape[lStart:lEnd]
-                rightEye = shape[rStart:rEnd]
-                leftEyeHull = cv2.convexHull(leftEye)
-                rightEyeHull = cv2.convexHull(rightEye)
-                cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-                cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-                
-                # 코 그리기
-                nose = shape[nStart:nEnd]
-                noseHull = cv2.convexHull(nose)
-                cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
-                
-                # 입 그리기
-                mouth = shape[mStart:mEnd]
-                mouthHull = cv2.convexHull(mouth)
-                cv2.drawContours(frame, [mouthHull], -1, (0, 255, 0), 1)
-                
-                # 턱 그리기
-                jaw = shape[jStart:jEnd]
-                jawHull = cv2.convexHull(jaw)
-                cv2.drawContours(frame, [jawHull], -1, (0, 255, 0), 1)
-                
-                # 눈썹 그리기
-                leftEyebrow = shape[eblStart:eblEnd]
-                rightEyebrow = shape[ebrStart:ebrEnd]
-                leftEyebrowHull = cv2.convexHull(leftEyebrow)
-                rightEyebrowHull = cv2.convexHull(rightEyebrow)
-                cv2.drawContours(frame, [leftEyebrowHull], -1, (0, 255, 0), 1)
-                cv2.drawContours(frame, [rightEyebrowHull], -1, (0, 255, 0), 1)
+                # 감정 레이블 표시
+                emotion_idx = np.argmax(prediction)
+                emotion_label = EMOTIONS[emotion_idx]
+                cv2.putText(frame, emotion_label, (x, y - 10),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2)
             
-            # 프레임 저장
-            tmp_path = os.path.join(base_dir, 'tmp', 't.jpg')
-            cv2.imwrite(tmp_path, frame)
+            # 결과를 JSON으로 인코딩
+            emotion_json = json.dumps(emotion_results)
             
-            # 프레임 전송
+            # 콜백이 등록되어 있으면 호출
+            if emotion_result_callback is not None:
+                try:
+                    emotion_result_callback(emotion_results)
+                except Exception as cb_err:
+                    print(f"emotion_result_callback error: {cb_err}")
+            
+            # 이미지를 JPEG로 인코딩
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            
+            # 프레임과 감정 분석 결과를 함께 전송
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + open(tmp_path, 'rb').read() + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+                   b'Content-Type: application/json\r\n\r\n' + emotion_json.encode() + b'\r\n')
                 
         except Exception as e:
             print(f"프레임 처리 중 오류 발생: {str(e)}")

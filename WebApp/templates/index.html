@@ -2,19 +2,101 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>실시간 표정 감지</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-      body { font-family: 'Noto Sans KR', sans-serif; background: #f5f5f5; text-align: center; }
-      .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 40px 20px; }
-      .btn { display: inline-block; padding: 15px 30px; background: #45AF7F; color: #fff; border-radius: 10px; font-weight: bold; text-decoration: none; transition: 0.2s; }
-      .btn:hover { background: #3d9c6f; }
+      body { 
+        font-family: 'Noto Sans KR', sans-serif; 
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container { 
+        max-width: 800px;
+        width: 90%;
+        margin: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 40px;
+        text-align: center;
+      }
+      h1 {
+        color: #2c3e50;
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+      p {
+        color: #34495e;
+        font-size: 1.1em;
+        line-height: 1.6;
+        margin-bottom: 30px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 15px 40px;
+        background: linear-gradient(45deg, #45AF7F, #3d9c6f);
+        color: #fff;
+        border-radius: 50px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(69, 175, 127, 0.3);
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(69, 175, 127, 0.4);
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 40px;
+      }
+      .feature {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+      }
+      .feature:hover {
+        transform: translateY(-5px);
+      }
+      .feature h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+      .feature p {
+        color: #7f8c8d;
+        font-size: 0.9em;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>실시간 표정 감지</h1>
-      <p>웹캠을 통해 실시간으로 표정을 감지합니다.</p>
-      <a href="/video" class="btn">감정 인식 시작</a>
+      <p>AI 기반 실시간 감정 인식 시스템으로 당신의 표정을 분석해보세요.</p>
+      <a href="/video" class="btn">감정 인식 시작하기</a>
+      
+      <div class="features">
+        <div class="feature">
+          <h3>실시간 분석</h3>
+          <p>웹캠을 통한 즉각적인 감정 분석</p>
+        </div>
+        <div class="feature">
+          <h3>정확한 감지</h3>
+          <p>최신 AI 기술을 활용한 정밀한 감정 인식</p>
+        </div>
+        <div class="feature">
+          <h3>사용자 친화적</h3>
+          <p>직관적이고 쉬운 인터페이스</p>
+        </div>
+      </div>
     </div>
   </body>
 </html>
