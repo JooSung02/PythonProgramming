@@ -1,81 +1,102 @@
 # 멀티모달 감정 인식 시스템
 
-실시간 얼굴 감정 인식 웹 애플리케이션입니다. 웹캠을 통해 사용자의 얼굴을 감지하고 7가지 감정을 실시간으로 분석합니다.
+실시간으로 얼굴 표정을 분석하여 감정을 인식하는 웹 애플리케이션입니다.
 
 ## 주요 기능
 
-- 실시간 얼굴 감지 및 추적
-- 7가지 감정 상태 인식 (화남, 역겨움, 두려움, 행복, 슬픔, 놀람, 무표정)
-- 얼굴 특징점(랜드마크) 감지
-- 각 감정의 확률 실시간 표시
-- 직관적인 웹 인터페이스
+- 실시간 웹캠을 통한 감정 분석
+- 영상 파일 업로드 및 감정 분석
+- 7가지 감정 분류 (행복, 슬픔, 분노, 놀람, 중립, 혐오, 두려움)
+- 실시간 감정 분석 결과 시각화
 
-## 설치 가이드
+## 기술 스택
 
-1. 저장소 다운로드:
+- Python 3.8+
+- Flask
+- TensorFlow
+- OpenCV
+- dlib
+- HTML/CSS/JavaScript
+
+## 설치 방법
+
+1. 저장소 클론
 ```bash
-git clone https://github.com/JooSung02/PythonProgramming.git
+git clone https://github.com/[your-username]/Multimodal-Emotion-Recognition.git
 cd Multimodal-Emotion-Recognition
 ```
 
-2. 필요한 패키지 설치:
+2. 가상환경 생성 및 활성화
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+```
+
+3. 필요한 패키지 설치
 ```bash
 pip install -r requirements.txt
 ```
 
-3. 모델 파일 준비:
-- `Video/Models/EmotionXCeption/video.h5` 파일 다운로드
-- `Video/Models/Landmarks/face_landmarks.dat` 파일 다운로드
+4. 모델 파일 다운로드
+- `Models` 폴더에 다음 파일들이 필요합니다:
+  - `video.h5`: 감정 인식 모델
+  - `face_landmarks.dat`: 얼굴 랜드마크 모델
 
 ## 실행 방법
 
-1. 웹 서버 실행:
+1. 서버 실행
 ```bash
-cd WebApp
-python main.py
+python WebApp/main.py
 ```
 
-2. 웹 브라우저 접속:
-- http://localhost:5000 주소로 접속
+2. 웹 브라우저에서 접속
+```
+http://localhost:5000
+```
 
-## 프로젝트 구성
+## 사용 방법
+
+1. 웹캠을 통한 실시간 감정 분석
+   - 웹캠이 연결된 상태에서 페이지 접속
+   - 자동으로 감정 분석 시작
+
+2. 영상 파일을 통한 감정 분석
+   - "영상 선택" 버튼 클릭
+   - 지원되는 형식: MP4, AVI, MOV, MKV
+   - "업로드" 버튼 클릭
+   - 자동으로 영상 재생 및 감정 분석 시작
+
+## 프로젝트 구조
 
 ```
 Multimodal-Emotion-Recognition/
-├── Video/                    # 비디오 감정 인식 모듈
-│   ├── Models/              # 학습된 모델 파일들
-│   └── Python/              # 파이썬 구현 코드
-├── WebApp/                   # 웹 애플리케이션
-│   ├── library/             # 핵심 라이브러리
-│   ├── static/              # 정적 파일 (CSS, JS)
-│   │   ├── js/             # 자바스크립트 파일
-│   │   │   └── db/        # 데이터베이스 관련 파일
-│   │   └── CSS/           # 스타일시트 파일
-│   ├── templates/           # HTML 템플릿
-│   └── main.py             # 웹 서버 메인 파일
-└── requirements.txt         # 필요한 파이썬 패키지 목록
+├── WebApp/
+│   ├── main.py
+│   ├── app.py
+│   ├── library/
+│   │   └── video_emotion_recognition.py
+│   ├── templates/
+│   │   ├── index.html
+│   │   └── video.html
+│   └── Models/
+│       ├── video.h5
+│       └── face_landmarks.dat
+├── requirements.txt
+└── README.md
 ```
-
-## 사용 기술
-
-- Python: 주요 프로그래밍 언어
-- OpenCV: 영상 처리 및 얼굴 감지
-- dlib: 얼굴 랜드마크 감지
-- TensorFlow/Keras: 딥러닝 모델
-- Flask: 웹 서버 프레임워크
-- HTML/CSS/JavaScript: 웹 인터페이스
 
 ## 라이선스
 
-이 프로젝트는 MIT 라이선스로 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+MIT License
 
-## 프로젝트 기여
+## 기여 방법
 
-1. 이 저장소를 포크합니다.
-2. 새로운 기능 브랜치를 생성합니다 (`git checkout -b feature/새로운기능`).
-3. 변경사항을 커밋합니다 (`git commit -m '새로운 기능 추가'`).
-4. 브랜치를 푸시합니다 (`git push origin feature/새로운기능`).
-5. Pull Request를 생성합니다.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 문의 및 피드백
 

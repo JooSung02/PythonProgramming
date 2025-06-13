@@ -123,6 +123,21 @@
           padding: 20px;
         }
       }
+      .upload-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        text-align: center;
+      }
+      .upload-section h2 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+      }
+      #selectedFile {
+        margin: 0 10px;
+        color: #666;
+      }
     </style>
   </head>
 
@@ -194,6 +209,16 @@
         <button class="btn btn-secondary" onclick="history.go(-1)">뒤로가기</button>
       </div>
 
+      <div class="upload-section">
+        <h2>영상 파일 업로드</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="file" id="videoFile" accept=".mp4,.avi,.mov,.mkv" style="display: none;">
+          <button type="button" class="btn" onclick="document.getElementById('videoFile').click()">영상 선택</button>
+          <span id="selectedFile"></span>
+          <button type="submit" class="btn" style="display: none;" id="uploadBtn">업로드</button>
+        </form>
+      </div>
+
       {% with messages = get_flashed_messages() %}
         {% if messages %}
           {% for message in messages %}
@@ -209,6 +234,50 @@
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const videoFeed = document.getElementById('video-feed');
+        const uploadForm = document.getElementById('uploadForm');
+        const videoFile = document.getElementById('videoFile');
+        const selectedFile = document.getElementById('selectedFile');
+        const uploadBtn = document.getElementById('uploadBtn');
+        
+        // 파일 선택 시
+        videoFile.addEventListener('change', function() {
+          if (this.files.length > 0) {
+            selectedFile.textContent = this.files[0].name;
+            uploadBtn.style.display = 'inline-block';
+          } else {
+            selectedFile.textContent = '';
+            uploadBtn.style.display = 'none';
+          }
+        });
+        
+        // 파일 업로드
+        uploadForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData();
+          formData.append('video', videoFile.files[0]);
+          
+          fetch('/upload', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // 업로드 성공 시 비디오 피드 업데이트
+              videoFeed.src = `/video_feed?video_path=${data.filename}`;
+              selectedFile.textContent = '';
+              uploadBtn.style.display = 'none';
+              videoFile.value = '';
+            } else {
+              alert(data.error || '업로드 실패');
+            }
+          })
+          .catch(error => {
+            console.error('업로드 오류:', error);
+            alert('업로드 중 오류가 발생했습니다.');
+          });
+        });
         
         // 감정 레이블 매핑
         const emotionMapping = {
@@ -220,7 +289,7 @@
           'Sad': '슬픔',
           'Surprise': '놀람'
         };
-
+        
         // 감정 분석 결과 업데이트 함수
         function updateEmotionResults(face1) {
           Object.entries(emotionMapping).forEach(([eng, kor], idx) => {
@@ -233,26 +302,26 @@
             }
           });
         }
-
+        
         // 주기적으로 감정 결과를 받아옴
         setInterval(function() {
           fetch('/emotion_feed')
             .then(res => res.json())
             .then(data => {
-              // 여러 얼굴이 있을 경우 첫 번째 얼굴만 사용
               const face1 = data.face_1 || null;
               updateEmotionResults(face1);
             })
             .catch(err => console.error('감정 결과 갱신 오류:', err));
         }, 1000);
-
+        
         videoFeed.onload = function() {
           console.log("비디오 피드 로드 성공");
         };
+        
         videoFeed.onerror = function() {
           console.log("비디오 피드 로드 실패");
           document.querySelector('.status').innerHTML = 
-            '<p style="color: #dc3545;">웹캠 연결에 실패했습니다. 웹캠이 연결되어 있는지 확인해주세요.</p>';
+            '<p style="color: #dc3545;">비디오 소스 연결에 실패했습니다.</p>';
         };
       });
     </script>

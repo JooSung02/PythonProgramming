@@ -29,20 +29,26 @@ def get_emotion_predictions(prediction):
         emotions[emotion] = float(prediction[0][i])
     return emotions
 
-def gen():
+def gen(video_path=None):
     """
     비디오 스트리밍 생성 함수
+    video_path: 영상 파일 경로 (None이면 웹캠 사용)
     """
     print("비디오 스트리밍 시작...")
     
-    # 비디오 캡처 시작
-    video_capture = cv2.VideoCapture(0)
+    # 비디오 소스 설정
+    if video_path:
+        print(f"영상 파일 로드: {video_path}")
+        video_capture = cv2.VideoCapture(video_path)
+    else:
+        print("웹캠 활성화")
+        video_capture = cv2.VideoCapture(0)
     
     if not video_capture.isOpened():
-        print("웹캠을 활성화할 수 없습니다.")
+        print("비디오 소스를 활성화할 수 없습니다.")
         return
     
-    print("웹캠이 정상적으로 활성화되었습니다.")
+    print("비디오 소스가 정상적으로 활성화되었습니다.")
     
     # 현재 디렉토리 경로
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -95,8 +101,12 @@ def gen():
             # 프레임 캡처
             ret, frame = video_capture.read()
             if not ret:
-                print("프레임을 읽을 수 없습니다.")
-                break
+                if video_path:
+                    print("영상 파일의 끝에 도달했습니다.")
+                    break
+                else:
+                    print("프레임을 읽을 수 없습니다.")
+                    break
             
             # 그레이스케일 변환
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

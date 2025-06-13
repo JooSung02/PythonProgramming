@@ -1,10 +1,24 @@
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response, jsonify, request
 import os
 import threading
 import time
 import json
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+# 업로드된 파일을 저장할 디렉토리 설정
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# 업로드 폴더가 없으면 생성
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 try:
     from library.video_emotion_recognition import gen, set_emotion_result_callback
@@ -36,9 +50,31 @@ def index():
 def video():
     return render_template('video.html')
 
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'video' not in request.files:
+        return jsonify({'error': '파일이 없습니다.'}), 400
+    
+    file = request.files['video']
+    if file.filename == '':
+        return jsonify({'error': '선택된 파일이 없습니다.'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return jsonify({'success': True, 'filename': filename})
+    
+    return jsonify({'error': '허용되지 않는 파일 형식입니다.'}), 400
+
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    video_path = request.args.get('video_path')
+    if video_path:
+        video_path = os.path.join(app.config['UPLOAD_FOLDER'], video_path)
+        if not os.path.exists(video_path):
+            return "영상 파일을 찾을 수 없습니다.", 404
+    return Response(gen(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # 실시간 감정 결과 반환 API
 @app.route('/emotion_feed')
